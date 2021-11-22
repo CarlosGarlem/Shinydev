@@ -1,2 +1,2 @@
 # Shiny Project
-This project contains a shiny app develop based on Sample-SuperStore dataset
+This project contains a shiny app developed based on Sample-SuperStore dataset
