@@ -6,6 +6,7 @@ library(lubridate)
 
 shinyServer(function(input, output, session) {
     
+    #KPIs------------------------------------------------------------------------------------------------------------
     
     kpi_choosen_metric <- eventReactive(input$kpi_metric, {
         
@@ -47,7 +48,7 @@ shinyServer(function(input, output, session) {
         }
         
         metric_list <- list('data' = df, 'ylab' = ylab, 'title' = title)
-    }, ignoreNULL = T)
+    })
     
 
     output$kpi_orders <- renderText({
@@ -111,6 +112,16 @@ shinyServer(function(input, output, session) {
         
     })
     
+    
+    
+    #Regions------------------------------------------------------------------------------------------------------------
+    output$region_map <- renderPlot({
+        plot(mtcars$mpg, mtcars$cyl)
+    })
+    
+    output$region_bars <- renderPlot({
+        plot(mtcars$mpg, mtcars$disp)
+    })
 })
 
 

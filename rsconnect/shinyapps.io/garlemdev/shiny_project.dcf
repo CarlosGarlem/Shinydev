@@ -1,0 +1,11 @@
+name: shiny_project
+title:
+username:
+account: garlemdev
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5194131
+bundleId: 5287393
+url: https://garlemdev.shinyapps.io/shiny_project/
+when: 1637728108.46315
+lastSyncTime: 1637728108.46315
