@@ -1,16 +1,23 @@
 library(shiny)
-library(shinydashboard)
+library(lubridate)
 
 
-shinyUI(navbarPage('Store Analysis',
+shinyUI(navbarPage(title = 'Store Analysis',
                    
    tabPanel('KPIs',
         sidebarLayout(position = 'right',
             sidebarPanel(
-                dateRangeInput('kpi_date', 'Date Range')
+                dateRangeInput('kpi_date_range', 'Date Range', start = floor_date( max(store_df$Order.Date), 'year')
+                               ,end = max(store_df$Order.Date)),
+                selectInput('kpi_metric'
+                            ,'Metric to plot'
+                            ,choices = c('Orders', 'Sales', 'Profit', 'Margin')
+                            ,selected = 'Margin')
             ),
             mainPanel(
                 h2('Store KPIs', align = 'center', style = 'font-weight: bold'),
+                br(),
+                br(),
                 fluidRow(
                     column(3,
                            div(
@@ -37,9 +44,9 @@ shinyUI(navbarPage('Store Analysis',
                            )  
                     )
                 ),
-                fluidRow(
-                    plotOutput('kpi_plot')
-                )
+                br(),
+                br(),
+                fluidRow(plotOutput('kpi_plot'))
             )
                     
         )
