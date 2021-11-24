@@ -115,12 +115,41 @@ shinyServer(function(input, output, session) {
     
     
     #Regions------------------------------------------------------------------------------------------------------------
+    
+    observeEvent(input$region_viz, {
+        updateTabsetPanel(session, 'region_tab', selected = input$region_viz)
+    })
+    
+    
+    observeEvent(input$region_chk_regions, {
+        choices_df <- store_df %>%
+                        filter(Region %in% input$region_chk_regions) %>%
+                        distinct(State)
+        
+        updateSelectInput(session, 'region_state', selected = choices_df$State, choices = choices_df$State)
+    })
+    
+    
     output$region_map <- renderPlot({
         plot(mtcars$mpg, mtcars$cyl)
     })
     
+    
     output$region_bars <- renderPlot({
-        plot(mtcars$mpg, mtcars$disp)
+        store_df %>%
+            filter(Order.Date >= input$kpi_date_range[1], 
+                   Order.Date <= input$kpi_date_range[2],
+                   Region %in% input$region_chk_regions) %>%
+            group_by(Region, State) %>%
+            summarise(Sales = n_distinct(Order.ID)) %>%
+            ggplot(aes(x = State, y = Sales, fill = Region)) + 
+                geom_bar(stat = 'identity')+
+                geom_text(aes(label = Sales), vjust = -0.3, size = 3.5)+
+                theme_minimal() +
+                ggtitle('Sales by State and Region') + 
+                theme(axis.text.x = element_text(angle = 70)) +
+                theme(plot.title = element_text(size = 15, face = 'bold'))
+            
     })
 })
 

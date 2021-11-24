@@ -1,6 +1,6 @@
 library(shiny)
 library(lubridate)
-library(desc)
+
 
 
 shinyUI(navbarPage(title = 'Store Analysis',
@@ -58,6 +58,8 @@ shinyUI(navbarPage(title = 'Store Analysis',
    tabPanel('Regions',
       sidebarLayout(position = 'right',
         sidebarPanel(
+           dateRangeInput('region_date_range', 'Date Range', start = floor_date(max(store_df$Order.Date), 'year')
+                          ,end = max(store_df$Order.Date)),
            selectInput('region_viz'
                        ,'Choose visualization'
                        ,choices = c('Map', 'Bars')
@@ -66,12 +68,14 @@ shinyUI(navbarPage(title = 'Store Analysis',
                               ,'Choose regions'
                               ,choices = unique(store_df$Region)
                               ,selected = 'Central'),
-           dateRangeInput('region_date_range', 'Date Range', start = floor_date(max(store_df$Order.Date), 'year')
-                          ,end = max(store_df$Order.Date)),
+           selectInput('region_state',
+                       'Choose state',
+                       choices = unique(store_df$State),
+                       multiple = T)
         ),
         mainPanel(
            h2('Sales by Region', align = 'center', style = 'font-weight: bold'),
-           tabsetPanel(id = 'region_plot', #type = 'hidden',
+           tabsetPanel(id = 'region_tab', #type = 'hidden',
                        tabPanel('Map', plotOutput('region_map')),
                        tabPanel('Bars', plotOutput('region_bars'))
            ),
