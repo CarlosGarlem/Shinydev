@@ -1,7 +1,4 @@
 library(shiny)
-library(lubridate)
-
-
 
 shinyUI(navbarPage(title = 'Store Analysis',
                    
@@ -12,8 +9,11 @@ shinyUI(navbarPage(title = 'Store Analysis',
                          ,end = max(store_df$Order.Date)),
           selectInput('kpi_metric'
                       ,'Metric to plot'
-                      ,choices = c('Orders', 'Sales', 'Profit', 'Margin')
-                      ,selected = 'Margin')
+                      ,choices = c('Sales' = 'Orders',
+                                   'Sales Amount' = 'Sales',
+                                   'Profit Amount' = 'Profit',
+                                   'Margin' = 'Margin')
+                      ,selected = 'Orders')
       ),
       mainPanel(
           h2('Store KPIs', align = 'center', style = 'font-weight: bold'),
@@ -22,7 +22,7 @@ shinyUI(navbarPage(title = 'Store Analysis',
           fluidRow(
               column(3,
                      div(
-                         h5('Total Orders', align = 'center', style = 'font-weight: bold'),
+                         h5('Total Sales', align = 'center', style = 'font-weight: bold'),
                          h4(textOutput('kpi_orders'), align = 'center', style = 'color:blue; font-weight: bold'),
                      )  
               ),
@@ -63,7 +63,7 @@ shinyUI(navbarPage(title = 'Store Analysis',
            selectInput('region_viz'
                        ,'Choose visualization'
                        ,choices = c('Map', 'Bars')
-                       ,selected = 'Bars'),
+                       ,selected = 'Map'),
            checkboxGroupInput('region_chk_regions'
                               ,'Choose regions'
                               ,choices = unique(store_df$Region)
@@ -74,9 +74,12 @@ shinyUI(navbarPage(title = 'Store Analysis',
                        multiple = T)
         ),
         mainPanel(
-           h2('Sales by Region', align = 'center', style = 'font-weight: bold'),
-           tabsetPanel(id = 'region_tab', #type = 'hidden',
-                       tabPanel('Map', plotOutput('region_map')),
+           h2('Sales by Region & State', align = 'center', style = 'font-weight: bold'),
+           br(),
+           br(),
+           br(),
+           tabsetPanel(id = 'region_tab', type = 'hidden',
+                       tabPanel('Map', plotlyOutput('region_map')),
                        tabPanel('Bars', plotOutput('region_bars'))
            ),
         )

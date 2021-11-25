@@ -1,14 +1,12 @@
 library(shiny)
-library(dplyr)
 library(ggplot2)
-library(lubridate)
 
 
 shinyServer(function(input, output, session) {
     
     #KPIs------------------------------------------------------------------------------------------------------------
     
-    kpi_choosen_metric <- eventReactive(input$kpi_metric, {
+    kpi_choosen_metric <- reactive({
         
         df <- store_df %>%
             filter(Order.Date >= input$kpi_date_range[1], 
@@ -27,7 +25,7 @@ shinyServer(function(input, output, session) {
                     summarise(Metric = sum(Profit))
             
             ylab <- 'Profit ($)'
-            title <- 'Profit'
+            title <- 'Profit Amount'
                     
         } else if (input$kpi_metric == 'Sales'){
             df <- df %>%
@@ -35,15 +33,15 @@ shinyServer(function(input, output, session) {
                 summarise(Metric = sum(Sales))
             
             ylab <- 'Sales ($)'
-            title <- 'Sales'
+            title <- 'Sales Amount'
             
         } else if (input$kpi_metric == 'Orders'){
             df <- df %>%
                 group_by(Order.Date) %>%
                 summarise(Metric = n_distinct(Order.ID))
             
-            ylab <- 'Orders'
-            title <- 'Orders'
+            ylab <- 'Sales'
+            title <- 'Sales'
             
         }
         
@@ -101,14 +99,6 @@ shinyServer(function(input, output, session) {
             ylab(list_metric$ylab) + 
             ggtitle(list_metric$title) + 
             theme(plot.title = element_text(size = 15, face = 'bold'))
-        # ggplot(aes(x = Order.Date)) +
-        #     geom_line(aes(y = Profit), size = 1, color = 'orange') +
-        #     geom_line(aes(y = Sales), size = 1, color = 'blue') +
-        #     scale_y_continuous(
-        #         name = 'Profit ($)', # Features of the first axis
-        #         sec.axis = sec_axis(trans = ~.*100, name = 'Sales ($)') # Add a second axis and specify its features
-        #     ) + 
-        #     theme_minimal()
         
     })
     
@@ -130,16 +120,40 @@ shinyServer(function(input, output, session) {
     })
     
     
-    output$region_map <- renderPlot({
-        plot(mtcars$mpg, mtcars$cyl)
+    output$region_map <- renderPlotly({
+        
+        state_df <- store_df %>%
+                    filter(Order.Date >= input$region_date_range[1], 
+                            Order.Date <= input$region_date_range[2],
+                            Region %in% input$region_chk_regions,
+                            State %in% input$region_state) %>%
+                            group_by(State, StateAbb) %>%
+                            summarise(Sales = n_distinct(Order.ID))
+        
+        g <- list(
+            scope = 'usa',
+            projection = list(type = 'albers usa'),
+            lakecolor = toRGB('white')
+        )
+        
+        plot_geo(state_df) %>%
+            add_trace(
+                z = ~Sales, 
+                text = state_df$State,
+                span = I(0),
+                locations = state_df$StateAbb,
+                locationmode = 'USA-states') %>%
+            layout(geo = g)
+        
     })
     
     
     output$region_bars <- renderPlot({
         store_df %>%
-            filter(Order.Date >= input$kpi_date_range[1], 
-                   Order.Date <= input$kpi_date_range[2],
-                   Region %in% input$region_chk_regions) %>%
+            filter(Order.Date >= input$region_date_range[1], 
+                   Order.Date <= input$region_date_range[2],
+                   Region %in% input$region_chk_regions,
+                   State %in% input$region_state) %>%
             group_by(Region, State) %>%
             summarise(Sales = n_distinct(Order.ID)) %>%
             ggplot(aes(x = State, y = Sales, fill = Region)) + 
