@@ -224,6 +224,28 @@ shinyServer(function(input, output, session) {
         
         
     })
+    
+    # Shipping --------------------------------------------------------------------------------------------------------
+    
+    ship_filters <- reactive({
+        df <- store_df %>% filter(Ship.Mode %in% input$ship_mode, 
+                                  Segment %in% input$ship_segment,
+                                  Ship.Date >= input$ship_date_range[1],
+                                  Ship.Date <= input$ship_date_range[2])
+        
+        metric_list <- list('data' = df)
+        metric_list
+    })
+    
+    output$ship_plot <- renderPlotly({
+        filtered_data <- ship_filters()
+        plt <- filtered_data$data %>% 
+            group_by(Segment, Ship.Mode) %>%
+            summarise(n = n()) %>%
+            ggplot(aes(weight = n, fill = Ship.Mode, x = Segment)) + 
+            geom_bar(position="dodge") 
+        plotly_build(plt)
+    })
 })
 
 

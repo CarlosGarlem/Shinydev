@@ -111,6 +111,18 @@ shinyUI(navbarPage(title = 'Store Analysis',
                             plotOutput('prod_segment_graf')),
                      column(6, DT::dataTableOutput('prod_tbl')))), 
                   position="left", fluid=T)),
-   tabPanel('Shipping')
+   tabPanel('Shipping', 
+            h2('Shipping Dashboard'), 
+            sidebarLayout(
+               sidebarPanel(
+                  selectInput('ship_mode', 'Choose Mode', choices=unique(store_df$Ship.Mode), multiple = T, selected=unique(store_df$Ship.Mode)),
+                  selectInput('ship_segment', 'Choose Segment', choices=unique(store_df$Segment), multiple = T, selected = unique(store_df$Segment)),
+                  dateRangeInput('ship_date_range', 'Date Range', start = floor_date(max(store_df$Ship.Date), 'year')
+                                 ,end = max(store_df$Ship.Date))
+               ),
+               mainPanel(
+                  plotlyOutput('ship_plot')
+               ))
+            )
 
 ))
