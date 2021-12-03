@@ -3,7 +3,7 @@ library(dplyr)
 library(ggplot2)
 library(DT)
 
-shinyUI(navbarPage(title = 'Store Analysis',
+shinyUI(navbarPage(id='nav', title = 'Store Analysis',
                    
    tabPanel('KPIs',
      sidebarLayout(position = 'right',

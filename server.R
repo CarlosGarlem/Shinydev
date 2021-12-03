@@ -246,6 +246,14 @@ shinyServer(function(input, output, session) {
             geom_bar(position="dodge") 
         plotly_build(plt)
     })
+    
+    observe({
+        query <- parseQueryString(session$clientData$url_search)
+        view <- query[["view"]]
+        if(!is.null(view)){
+            updateNavbarPage(session, 'nav', selected = view)
+        }
+    })
 })
 
 
