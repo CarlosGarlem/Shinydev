@@ -1,4 +1,7 @@
 library(shiny)
+library(dplyr)
+library(ggplot2)
+library(DT)
 
 shinyUI(navbarPage(title = 'Store Analysis',
                    
@@ -86,7 +89,28 @@ shinyUI(navbarPage(title = 'Store Analysis',
       )
    ),
    
-   tabPanel('Products'),
+   tabPanel('Products',
+            h2('Products Dashboard'),
+            sidebarLayout(
+               sidebarPanel(
+                  selectInput('prod_cat', 'Choose Category', choices=unique(store_df$Category), multiple = T, selected=unique(store_df$Category)),
+                  selectInput('prod_subcat', 'Choose Sub Category', choices=unique(store_df$Sub.Category), multiple = T),
+                  selectInput('prod_segment', 'Choose Segment', choices=unique(store_df$Segment), multiple = T, selected=unique(store_df$Segment)),
+                  dateRangeInput('prod_date_range', 'Date Range', start = floor_date(max(store_df$Order.Date), 'year')
+                                 ,end = max(store_df$Order.Date)),
+                  sliderInput('prod_profit', 'Profit', min=min(store_df$Profit), max = max(store_df$Profit), value = c(0,max(store_df$Profit))),
+                  width = 2
+                  ),
+               mainPanel(
+                  fluidRow(
+                     column(6 , 
+                            plotOutput('prod_profit', 
+                                       click='clk',
+                                       brush = brushOpts(id = 'mouse_brush',
+                                                         direction = c("x"))), 
+                            plotOutput('prod_segment_graf')),
+                     column(6, DT::dataTableOutput('prod_tbl')))), 
+                  position="left", fluid=T)),
    tabPanel('Shipping')
 
 ))

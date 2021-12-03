@@ -165,6 +165,65 @@ shinyServer(function(input, output, session) {
                 theme(plot.title = element_text(size = 15, face = 'bold'))
             
     })
+    
+    
+    # Products --------------------------------------------------------------------------------------------------------
+    
+    observeEvent(input$clk, {
+        df <- nearPoints(prod_profit_filters()$data, input$clk)
+        output$prod_tbl <- DT::renderDataTable({
+            df
+        })
+    })
+    
+    observeEvent(input$mouse_brush, {
+        df <- brushedPoints(prod_profit_filters()$data, input$mouse_brush, allRows = TRUE)
+        output$prod_tbl <- DT::renderDataTable({
+            datatable(df %>% select(-c(Row.ID, Customer.Name, Postal.Code, selected_, StateAbb)), rownames= FALSE)
+        })
+        #updateSliderInput(session, 'prod_date_range', min = input$mouse_brush$x$min, max = input$mouse_brush$x$max)
+    })
+    
+    observeEvent(input$prod_cat, {
+        choices_df <- store_df %>%
+            filter(Category %in% input$prod_cat) %>%
+            distinct(Sub.Category)
+        
+        updateSelectInput(session, 'prod_subcat', selected = choices_df$Sub.Category, choices = choices_df$Sub.Category)
+    })
+    
+    prod_profit_filters <- reactive({
+        df <- store_df %>% filter(Category %in% input$prod_cat, 
+                                  Sub.Category %in% input$prod_subcat, 
+                                  Segment %in% input$prod_segment,
+                                  Order.Date >= input$prod_date_range[1],
+                                  Order.Date <= input$prod_date_range[2],
+                                  Profit >= input$prod_profit[1],
+                                  Profit <= input$prod_profit[2])
+        
+        xlab <- 'Profit'
+        ylab <- 'Quantity'
+        
+        metric_list <- list('data' = df, 'ylab' = ylab, 'title' = title)
+        metric_list
+    })
+    output$prod_profit <- renderPlot({
+        filtered_data <- prod_profit_filters()
+        
+        ggplot(filtered_data$data, aes(y = Profit, x = Order.Date, size=Quantity, color=Segment)) +
+            geom_point()
+    })
+    
+    output$prod_segment_graf <- renderPlot({
+        filtered_data <- prod_profit_filters() 
+        filtered_data$data %>% 
+            group_by(Segment) %>%
+            summarise(ProfitBySegment = sum(Profit)) %>%
+            ggplot(aes(y = ProfitBySegment, x = Segment, fill = Segment)) +
+            geom_col()
+        
+        
+    })
 })
 
 
