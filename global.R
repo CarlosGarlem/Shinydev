@@ -2,6 +2,8 @@ library(dplyr)
 library(datasets)
 library(lubridate)
 library(plotly)
+library(ggplot2)
+library(DT)
 
 states_info <- data.frame('StateName' = c('District of Columbia', state.name)
                           ,'StateAbb' = c('DC', state.abb))

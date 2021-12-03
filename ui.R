@@ -1,7 +1,4 @@
 library(shiny)
-library(dplyr)
-library(ggplot2)
-library(DT)
 
 shinyUI(navbarPage(id='nav', title = 'Store Analysis',
                    
@@ -90,7 +87,10 @@ shinyUI(navbarPage(id='nav', title = 'Store Analysis',
    ),
    
    tabPanel('Products',
-            h2('Products Dashboard'),
+            #h2('Products Dashboard'),
+            h2('Products Dashboard', align = 'center', style = 'font-weight: bold'),
+            br(),
+            br(),
             sidebarLayout(
                sidebarPanel(
                   selectInput('prod_cat', 'Choose Category', choices=unique(store_df$Category), multiple = T, selected=unique(store_df$Category)),
@@ -106,14 +106,15 @@ shinyUI(navbarPage(id='nav', title = 'Store Analysis',
                      column(6 , 
                             plotOutput('prod_profit', 
                                        click='clk',
-                                       brush = brushOpts(id = 'mouse_brush',
-                                                         direction = c("x"))), 
+                                       brush = brushOpts(id = 'mouse_brush')),
+                                                         #,direction = c("x"))), 
                             plotOutput('prod_segment_graf')),
                      column(6, DT::dataTableOutput('prod_tbl')))), 
                   position="left", fluid=T)),
+   
+   
    tabPanel('Shipping', 
-            h2('Shipping Dashboard'), 
-            sidebarLayout(
+            sidebarLayout(position = 'right',
                sidebarPanel(
                   selectInput('ship_mode', 'Choose Mode', choices=unique(store_df$Ship.Mode), multiple = T, selected=unique(store_df$Ship.Mode)),
                   selectInput('ship_segment', 'Choose Segment', choices=unique(store_df$Segment), multiple = T, selected = unique(store_df$Segment)),
@@ -121,6 +122,9 @@ shinyUI(navbarPage(id='nav', title = 'Store Analysis',
                                  ,end = max(store_df$Ship.Date))
                ),
                mainPanel(
+                  h2('Shipping Dashboard', align = 'center', style = 'font-weight: bold'),
+                  br(),
+                  br(),
                   plotlyOutput('ship_plot')
                ))
             )

@@ -1,5 +1,4 @@
 library(shiny)
-library(ggplot2)
 
 
 shinyServer(function(input, output, session) {
@@ -168,22 +167,8 @@ shinyServer(function(input, output, session) {
     
     
     # Products --------------------------------------------------------------------------------------------------------
-    
-    observeEvent(input$clk, {
-        df <- nearPoints(prod_profit_filters()$data, input$clk)
-        output$prod_tbl <- DT::renderDataTable({
-            df
-        })
-    })
-    
-    observeEvent(input$mouse_brush, {
-        df <- brushedPoints(prod_profit_filters()$data, input$mouse_brush, allRows = TRUE)
-        output$prod_tbl <- DT::renderDataTable({
-            datatable(df %>% select(-c(Row.ID, Customer.Name, Postal.Code, selected_, StateAbb)), rownames= FALSE)
-        })
-        #updateSliderInput(session, 'prod_date_range', min = input$mouse_brush$x$min, max = input$mouse_brush$x$max)
-    })
-    
+
+
     observeEvent(input$prod_cat, {
         choices_df <- store_df %>%
             filter(Category %in% input$prod_cat) %>%
@@ -191,6 +176,7 @@ shinyServer(function(input, output, session) {
         
         updateSelectInput(session, 'prod_subcat', selected = choices_df$Sub.Category, choices = choices_df$Sub.Category)
     })
+    
     
     prod_profit_filters <- reactive({
         df <- store_df %>% filter(Category %in% input$prod_cat, 
@@ -207,12 +193,15 @@ shinyServer(function(input, output, session) {
         metric_list <- list('data' = df, 'ylab' = ylab, 'title' = title)
         metric_list
     })
+    
+    
     output$prod_profit <- renderPlot({
         filtered_data <- prod_profit_filters()
         
         ggplot(filtered_data$data, aes(y = Profit, x = Order.Date, size=Quantity, color=Segment)) +
             geom_point()
     })
+    
     
     output$prod_segment_graf <- renderPlot({
         filtered_data <- prod_profit_filters() 
@@ -223,6 +212,22 @@ shinyServer(function(input, output, session) {
             geom_col()
         
         
+    })
+    
+    
+    output$prod_tbl <- DT::renderDataTable({
+        df <- prod_profit_filters()$data
+        clicked <- row.names(nearPoints(df, input$clk))
+        brushed <- row.names(brushedPoints(df, input$mouse_brush))
+        isolate({
+            if((length(clicked) + length(brushed)) > 0){
+                df <- df %>%
+                    filter(row.names(df) %in% c(clicked, brushed))
+            }
+        })
+        
+        datatable(df %>% select(-c(Row.ID, Customer.Name, Postal.Code, StateAbb)), rownames= FALSE)
+
     })
     
     # Shipping --------------------------------------------------------------------------------------------------------
@@ -237,6 +242,7 @@ shinyServer(function(input, output, session) {
         metric_list
     })
     
+    
     output$ship_plot <- renderPlotly({
         filtered_data <- ship_filters()
         plt <- filtered_data$data %>% 
@@ -247,6 +253,11 @@ shinyServer(function(input, output, session) {
         plotly_build(plt)
     })
     
+    
+    
+
+    # URL Query Parmas ---------------------------------------------------------
+
     observe({
         query <- parseQueryString(session$clientData$url_search)
         view <- query[["view"]]
